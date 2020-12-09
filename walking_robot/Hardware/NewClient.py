@@ -107,6 +107,7 @@ def set_path3(image, forward_criteria):
         m, c = np.linalg.lstsq(center_x.T, center_y, rcond=-1)[0]  # 최소제곱법
         # result = m
         print('slope :' + str(m))
+        K = 
         if image[150:160,140:180].mean() > 240:
             result = (-1, 1)
             motor(*result)
@@ -116,12 +117,14 @@ def set_path3(image, forward_criteria):
             motor(*result)
         elif m > 0:
             print('left')
-            result = (0.25, 1)
+            P_left = 1-K*m
+            result = (max(P_left, 0), 1)
             motor(*result)
 
         else:
             print('right')
-            result = (1, 0.4)
+            P_right = 1-K*m
+            result = (1, max(P_right, 0))
             motor(*result)
     except:
         result = 'backward'
