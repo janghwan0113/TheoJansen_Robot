@@ -21,47 +21,6 @@ from sys import argv
 host = '192.168.1.5:8000'
 PORT = 8000
 
-# motor manual control
-# HALF = .3
-# MOTOR_SPEEDS = {
-#     "q": (HALF, 1), "w": (1, 1), "e": (1, HALF),
-#     "a": (-1, 1), "s": (0, 0), "d": (1, -1),
-#     "z": (-HALF, -1), "x": (-1, -1), "c": (-1, -HALF),
-# }
-
-
-# def main():
-#     while True:
-#         conn = HTTPConnection(
-#             f"{argv[1] if len(argv) > 1 else  'localhost'}:{PORT}")
-
-#         try:
-#             conn.request("GET", "/")
-#         except ConnectionRefusedError as error:
-#             print(error)
-#             sleep(1)
-#             continue
-
-#         print('Connected')
-#         res = conn.getresponse()
-#         while True:
-#             chunk = res.readline()
-#             if (chunk == b'\n'):
-#                 continue
-#             if (not chunk):
-#                 break
-
-#             chunk = chunk[:-1].decode()
-#             data = json.loads(chunk)
-#             print(Time(), data)
-#             action = data['action']
-#             print('action', action)
-#             try:
-#                 motor(*MOTOR_SPEEDS[action])
-#             except KeyError as error:
-#                 print(error)
-
-
 # image processing
 # white 값. R: white~255, G: white~255, B:white~255 하얗게만듦.
 
@@ -75,33 +34,44 @@ def select_white(image, white):
 # 라즈베리파이(client)에서 노트북(server)로 보내기
 
 
-def Upload(body, headers={}):
-    conn = HTTPConnection(host)
-    # body를 보낸다, 경로를 임의로 설정한다('/').노트북으로 요청이 넘어감
-    conn.request('POST', '/', body=body, headers=headers)
-    res = conn.getresponse()  # 노트북에서 요청에대한 응답을 보내는데,
-    print(res.getheaders())  # 응답 중 헤더부분만가져와서 프린드
-    # X-server2CLient 라는 key의 value를 가져오는데 없으면 fallvback을 내보내라.
-    print(res.getheader('X-Server2Client', 'Fallback'))
-    print(res.read())  # 서버가 보낸 응답의 body부분을 프린트
-    print('Uploaded to', host, 'with status', res.status)
+# def Upload(body, headers={}):
+#     conn = HTTPConnection(host)
+#     # body를 보낸다, 경로를 임의로 설정한다('/').노트북으로 요청이 넘어감
+#     conn.request('POST', '/', body=body, headers=headers)
+#     res = conn.getresponse()  # 노트북에서 요청에대한 응답을 보내는데,
+#     print(res.getheaders())  # 응답 중 헤더부분만가져와서 프린드
+#     # X-server2CLient 라는 key의 value를 가져오는데 없으면 fallvback을 내보내라.
+#     print(res.getheader('X-Server2Client', 'Fallback'))
+#     print(res.read())  # 서버가 보낸 응답의 body부분을 프린트
+#     print('Uploaded to', host, 'with status', res.status)
 
 # 이미지를 byte로 서버에 전달
 
 
-def UploadNumpy(image):
-    result, image = cv2.imencode(
-        '.jpg', image, [int(cv2.IMWRITE_JPEG_QUALITY), 90])  # image 형식을 jpg로 바꾸는데 quality'90' 설정. img가 배열로 저장됨
-    if not result:
-        raise Exception('Image encode error')
-    # 이미지를 바이트로 변환 저장
-    Upload(image.tobytes(), {
-        "X-Client2Server": "123"
-    })
+# def UploadNumpy(image):
+#     result, image = cv2.imencode(
+#         '.jpg', image, [int(cv2.IMWRITE_JPEG_QUALITY), 90])  # image 형식을 jpg로 바꾸는데 quality'90' 설정. img가 배열로 저장됨
+#     if not result:
+#         raise Exception('Image encode error')
+#     # 이미지를 바이트로 변환 저장
+#     Upload(image.tobytes(), {
+#         "X-Client2Server": "123"
+#     })
 
 
 def set_path3(image, forward_criteria):
+
     height, width = image.shape
+    #ratio = .1
+    #end_ratio = 1 - ratio
+    #print(1, image.shape)
+    #image = image[
+     #   int(height*ratio):,
+      #  :
+    #]
+    #print(2, image.shape)
+    #print(image)
+    #height, width = image.shape
     height = height-1
     width = width-1
     center = int(width/2)
@@ -137,17 +107,21 @@ def set_path3(image, forward_criteria):
         m, c = np.linalg.lstsq(center_x.T, center_y, rcond=-1)[0]  # 최소제곱법
         # result = m
         print('slope :' + str(m))
-        if forward < 20 or forward < 50 and abs(m) < 0.35:
-            result = 'backward'
+        if image[150:160,140:180].mean() > 240:
+            result = (-1, 1)
+            motor(*result)
+            time.sleep(1.5)
         elif abs(m) < forward_criteria:
-
             result = (1, 1)
             motor(*result)
         elif m > 0:
-            result = (0.3, 0.8)
+            print('left')
+            result = (0.25, 1)
             motor(*result)
+
         else:
-            result = (0.8, 0.3)
+            print('right')
+            result = (1, 0.4)
             motor(*result)
     except:
         result = 'backward'
@@ -170,8 +144,8 @@ def motor(left, right):
         right_f = 0
         right_b = -right
 
-    p1A.ChangeDutyCycle(left_f*95)
-    p1B.ChangeDutyCycle(left_b*95)
+    p1A.ChangeDutyCycle(left_f*93)
+    p1B.ChangeDutyCycle(left_b*93)
     p2A.ChangeDutyCycle(right_f*100)
     p2B.ChangeDutyCycle(right_b*100)
 
@@ -222,7 +196,7 @@ def detect(img_array):
 
     for (x, y, w, h) in objs:
         cv2.rectangle(img_array, (x, y), (x+w, y+h), (255, 0, 0), 2)
-    cv2.imshow('img', img_array)
+    #cv2.imshow('img', img_array)
 
 
 camera = PiCamera()
@@ -244,11 +218,12 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     # 이미지가 한장한장 numpy array에 저장이 된다.
     image = frame.array
     mask_image = select_white(image, 70)  # mask image array
-    #cv2.imshow("Processed", mask_image)
+    cv2.imshow("Processed", mask_image)
+    #print(mask_image[150:160,140:180].mean())
     #cv2.imshow("Raw", image)
-    UploadNumpy(mask_image)
+    # UploadNumpy(mask_image)
     detect(image)
-    #set_path3(mask_image, 0.3)
+    set_path3(mask_image, 0.08)
 
     key = cv2.waitKey(1) & 0xFF  # 에러 방지
     rawCapture.truncate(0)  # 에러 방지
