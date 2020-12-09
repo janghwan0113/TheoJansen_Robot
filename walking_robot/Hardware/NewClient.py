@@ -117,13 +117,13 @@ def set_path3(image, forward_criteria):
             motor(*result)
         elif m > 0:
             print('left')
-            P_left = 1-K*m
+            P_left = 1-K*abs(m)
             result = (max(P_left, 0), 1)
             motor(*result)
 
         else:
             print('right')
-            P_right = 1-K*m
+            P_right = 1-K*abs(m)
             result = (1, max(P_right, 0))
             motor(*result)
     except:
