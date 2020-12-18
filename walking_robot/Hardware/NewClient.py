@@ -109,7 +109,7 @@ def set_path3(image, forward_criteria):
         # result = m
         print('slope :' + str(m))
         K = 2.8
-
+        AR_marker(image)
         if image[150:160,140:180].mean() > 240:
             result = (-1, 1)
             motor(*result)
@@ -191,7 +191,7 @@ def first_nonzero(arr, axis, invalid_val=-1):
     # 가로축 기준으로, 최댓값(1)의 위치를 반환, 만약 1을 발견하지 못하면 뚫려있다는 의미이므로 height 값을 반환
     return np.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
 
-def detect(img_array):
+def detect_stop(img_array):
     face_cascade = cv2.CascadeClassifier('./cascade.xml')
 
     gray = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
@@ -204,17 +204,17 @@ def detect(img_array):
 
 def AR_marker(img_array):
     markers = detect_markers(img_array)   #배열을 리턴
+    length = 0
     for marker in markers :
-        crdt_x = []
-        crdt_y = []
+        crdt_x, crdt_y = ([], [])
         for i in range(4):
             crdt_x.append(marker.contours[i][0][0])
             crdt_y.append(marker.contours[i][0][1]) 
         print('detected',marker.id, marker.contours)
         length = max(crdt_x)-min(crdt_x)
+        print(length)
         marker.highlite_marker(img_array)
-    cv2.imshow('image', img_array)  # 이미지를 보여준다
-    cv2.waitKey(1)
+    return length
 
 camera = PiCamera()
 camera.resolution = (320, 240)
@@ -235,9 +235,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     mask_image = select_white(image, 150)  # mask image array
     #cv2.imshow("Processed", mask_image)
     #print(mask_image[150:160,140:180].mean())
-    #cv2.imshow("Raw", image)
+    cv2.imshow("Raw", image)
     #UploadNumpy(mask_image)
-    #detect(image)
+    #detect_stop(image)
     #set_path3(mask_image, 0.04)
     AR_marker(image)
 
