@@ -17,6 +17,7 @@ import json
 from time import sleep
 from Time import Time
 from sys import argv
+import os
 
 host = '192.168.1.5:8000'
 PORT = 8000
@@ -204,7 +205,13 @@ def detect(img_array):
 def AR_marker(img_array):
     markers = detect_markers(img_array)   #배열을 리턴
     for marker in markers :
-        print('detected',marker,id)
+        crdt_x = []
+        crdt_y = []
+        for i in range(4):
+            crdt_x.append(marker.contours[i][0][0])
+            crdt_y.append(marker.contours[i][0][1]) 
+        print('detected',marker.id, marker.contours)
+        length = max(crdt_x)-min(crdt_x)
         marker.highlite_marker(img_array)
     cv2.imshow('image', img_array)  # 이미지를 보여준다
     cv2.waitKey(1)
@@ -222,7 +229,6 @@ time.sleep(.1)
 t = time.time()
 
 # main()
-
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 
     image = frame.array
