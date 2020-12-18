@@ -107,7 +107,7 @@ def set_path3(image, forward_criteria):
         m, c = np.linalg.lstsq(center_x.T, center_y, rcond=-1)[0]  # 최소제곱법
         # result = m
         print('slope :' + str(m))
-        K = 
+        K = 2.8
         if image[150:160,140:180].mean() > 240:
             result = (-1, 1)
             motor(*result)
@@ -119,12 +119,14 @@ def set_path3(image, forward_criteria):
             print('left')
             P_left = 1-K*abs(m)
             result = (max(P_left, 0), 1)
+            #result =(0.25,1)
             motor(*result)
 
         else:
             print('right')
             P_right = 1-K*abs(m)
             result = (1, max(P_right, 0))
+            #result=(1,0.25)
             motor(*result)
     except:
         result = 'backward'
@@ -220,13 +222,13 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # 이미지가 한장한장 numpy array에 저장이 된다.
     image = frame.array
-    mask_image = select_white(image, 70)  # mask image array
+    mask_image = select_white(image, 150)  # mask image array
     cv2.imshow("Processed", mask_image)
     #print(mask_image[150:160,140:180].mean())
     #cv2.imshow("Raw", image)
     # UploadNumpy(mask_image)
-    detect(image)
-    set_path3(mask_image, 0.08)
+    #detect(image)
+    #set_path3(mask_image, 0.04)
 
     key = cv2.waitKey(1) & 0xFF  # 에러 방지
     rawCapture.truncate(0)  # 에러 방지
