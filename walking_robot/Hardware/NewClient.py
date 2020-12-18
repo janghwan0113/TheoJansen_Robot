@@ -10,13 +10,13 @@ import argparse
 from socket import *
 import atexit
 from matplotlib import pyplot as plt
-
+from ar_markers import detect_markers
+from glob import glob
 # 수동제어 관련 라이브러리
 import json
 from time import sleep
 from Time import Time
 from sys import argv
-
 
 host = '192.168.1.5:8000'
 PORT = 8000
@@ -108,13 +108,16 @@ def set_path3(image, forward_criteria):
         # result = m
         print('slope :' + str(m))
         K = 2.8
+
         if image[150:160,140:180].mean() > 240:
             result = (-1, 1)
             motor(*result)
             time.sleep(1.5)
+
         elif abs(m) < forward_criteria:
             result = (1, 1)
             motor(*result)
+
         elif m > 0:
             print('left')
             P_left = 1-K*abs(m)
@@ -133,27 +136,6 @@ def set_path3(image, forward_criteria):
         m = 0
 
     # return result, round(m, 4), forward
-
-
-def motor(left, right):
-    if left > 0:
-        left_f = left
-        left_b = 0
-    else:
-        left_f = 0
-        left_b = -left
-    if right > 0:
-        right_f = right
-        right_b = 0
-    else:
-        right_f = 0
-        right_b = -right
-
-    p1A.ChangeDutyCycle(left_f*93)
-    p1B.ChangeDutyCycle(left_b*93)
-    p2A.ChangeDutyCycle(right_f*100)
-    p2B.ChangeDutyCycle(right_b*100)
-
 
 motor1A = 38
 motor1B = 40
@@ -177,6 +159,24 @@ p1B.start(100)
 p2A.start(100)
 p2B.start(100)
 
+def motor(left, right):
+    if left > 0:
+        left_f = left
+        left_b = 0
+    else:
+        left_f = 0
+        left_b = -left
+    if right > 0:
+        right_f = right
+        right_b = 0
+    else:
+        right_f = 0
+        right_b = -right
+
+    p1A.ChangeDutyCycle(left_f*93)
+    p1B.ChangeDutyCycle(left_b*93)
+    p2A.ChangeDutyCycle(right_f*100)
+    p2B.ChangeDutyCycle(right_b*100)
 
 def cleanup():
     GPIO.cleanup()
@@ -184,13 +184,11 @@ def cleanup():
 
 atexit.register(cleanup)
 
-
 def first_nonzero(arr, axis, invalid_val=-1):
     arr = np.flipud(arr)  # 사진뒤집어주는 코드
     mask = arr != 0  # 숫자가 255인 것은 True(1), 0인 것은 False(0)
     # 가로축 기준으로, 최댓값(1)의 위치를 반환, 만약 1을 발견하지 못하면 뚫려있다는 의미이므로 height 값을 반환
     return np.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
-
 
 def detect(img_array):
     face_cascade = cv2.CascadeClassifier('./cascade.xml')
@@ -203,6 +201,13 @@ def detect(img_array):
         cv2.rectangle(img_array, (x, y), (x+w, y+h), (255, 0, 0), 2)
     #cv2.imshow('img', img_array)
 
+def AR_marker(img_array):
+    markers = detect_markers(img_array)   #배열을 리턴
+    for marker in markers :
+        print('detected',marker,id)
+        marker.highlite_marker(img_array)
+    cv2.imshow('image', img_array)  # 이미지를 보여준다
+    cv2.waitKey(1)
 
 camera = PiCamera()
 camera.resolution = (320, 240)
@@ -220,18 +225,50 @@ t = time.time()
 
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 
-    # 이미지가 한장한장 numpy array에 저장이 된다.
     image = frame.array
     mask_image = select_white(image, 150)  # mask image array
-    cv2.imshow("Processed", mask_image)
+    #cv2.imshow("Processed", mask_image)
     #print(mask_image[150:160,140:180].mean())
     #cv2.imshow("Raw", image)
-    # UploadNumpy(mask_image)
+    #UploadNumpy(mask_image)
     #detect(image)
     #set_path3(mask_image, 0.04)
+    AR_marker(image)
 
     key = cv2.waitKey(1) & 0xFF  # 에러 방지
     rawCapture.truncate(0)  # 에러 방지
 
     if key == ord('q'):
         break
+
+
+
+'''
+class AR_test:
+  def __iter__(self):
+    self.streaming_obj = iter(sorted(glob('streaming/*.jpg',recursive=True)))
+    return self
+
+  def __next__(self):
+    path = next(self.streaming_obj)
+    print(path)
+    img = cv2.imread(path, cv2.IMREAD_COLOR)
+    return img
+
+for img in AR_test():
+    AR_marker(img)
+    #cv2.imshow("Raw", img)
+    key = cv2.waitKey(200) & 0xFF  # 에러 방지
+    
+    
+    # 바이트를 array로 만들고
+    data = np.asarray(bytearray(data), dtype="uint8")
+    img = cv2.imdecode(data, cv2.IMREAD_ANYCOLOR)  # 이미지 형식을 바꿔주고
+    # AR_Marker
+    markers = detect_markers(img)   #배열을 리턴
+    for marker in markers :
+        print('detected',marker,id)
+        marker.highlite_marker(img)
+    cv2.imshow('image', img)  # 이미지를 보여준다
+    cv2.waitKey(1)
+'''
