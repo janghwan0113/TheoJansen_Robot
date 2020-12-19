@@ -223,7 +223,7 @@ rawCapture = PiRGBArray(camera, size=(320, 240))
 
 time.sleep(.1)
 t = time.time()
-
+ 
 # main()
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 
@@ -234,8 +234,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     cv2.imshow("Raw", image)
     #UploadNumpy(mask_image)
     #detect_stop(image)
-    set_path3(mask_image, 0.04, image)
-    #R_marker(image)
+    #set_path3(mask_image, 0.04, image)
+    #AR_marker(image)
 
     key = cv2.waitKey(1) & 0xFF  # 에러 방지
     rawCapture.truncate(0)  # 에러 방지
