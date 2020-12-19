@@ -109,6 +109,7 @@ def set_path3(image, forward_criteria, raw_image_array):
         # result = m
         K = 2.8
         AR_length, AR_id = AR_marker(raw_image_array)
+        sonic_distance = ultra_sonic()
         print('AR_length:'+str(AR_length),'AR_id:'+str(AR_id),'slope:' + str(m))
         if image[150:160,140:180].mean() > 240:
             result = (-1, 1)
@@ -195,13 +196,18 @@ def detect_stop(img_array):
     gray = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
 
     objs = face_cascade.detectMultiScale(gray, 1.3, 5)
-
-    for (x, y, w, h) in objs:
-        cv2.rectangle(img_array, (x, y), (x+w, y+h), (255, 0, 0), 2)
-    #cv2.imshow('img', img_array)
+    if (len(objs)):
+        length = objs[0][3]
+        for (x, y, w, h) in objs:
+            cv2.rectangle(img_array, (x, y), (x+w, y+h), (255, 0, 0), 2)
+    else :
+        length = 0       
+    cv2.imshow('img', img_array)
+    return length
 
 def AR_marker(img_array):
     markers = detect_markers(img_array)   #배열을 리턴
+    length, id_num = (0,0)
     for marker in markers :
         crdt_x, crdt_y = ([], [])
         for i in range(4):
@@ -210,7 +216,37 @@ def AR_marker(img_array):
         marker.highlite_marker(img_array)
         length = max(crdt_x)-min(crdt_x)
         id_num = marker.id
-    return length, id_num
+    return length, id_num 
+
+
+
+GPIO_TRIGGER = 10
+GPIO_ECHO    = 12
+ 
+GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
+GPIO.setup(GPIO_ECHO, GPIO.IN)
+GPIO.output(GPIO_TRIGGER, False)
+
+def ultra_sonic():
+    GPIO.output(GPIO_TRIGGER, True)
+    time.sleep(0.00001)
+    GPIO.output(GPIO_TRIGGER, False)
+    start = time.time()
+    timeOut = start
+
+    while GPIO.input(GPIO_ECHO)==0:
+        start = time.time()
+        if time.time()-timeOut > 0.05:
+            return -1
+
+    while GPIO.input(GPIO_ECHO)==1:
+        if time.time()-start > 0.05:
+            return -1
+        stop = time.time()
+
+    elapsed = stop-start
+    distance = (elapsed * 34300)/2
+    return distance
 
 camera = PiCamera()
 camera.resolution = (320, 240)
@@ -229,13 +265,15 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     image = frame.array
     mask_image = select_white(image, 150)  # mask image array
-    #cv2.imshow("Processed", mask_image)
+
     #print(mask_image[150:160,140:180].mean())
-    cv2.imshow("Raw", image)
     #UploadNumpy(mask_image)
     #detect_stop(image)
-    #set_path3(mask_image, 0.04, image)
+    set_path3(mask_image, 0.04, image)
     #AR_marker(image)
+    #ultra_sonic()
+    #cv2.imshow("Processed", mask_image)
+    cv2.imshow("Raw", image)
 
     key = cv2.waitKey(1) & 0xFF  # 에러 방지
     rawCapture.truncate(0)  # 에러 방지
