@@ -110,30 +110,35 @@ def set_path3(image, forward_criteria, raw_image_array):
         K = 2.8
         AR_length, AR_id = AR_marker(raw_image_array)
         sonic_distance = ultra_sonic()
-        print('AR_length:'+str(AR_length),'AR_id:'+str(AR_id),'slope:' + str(m))
+        stop_length = detect_stop(raw_image_array)
+        print('slope:' + str(m),'AR_length:'+str(AR_length),'AR_id:'+str(AR_id), 'Ultra_Sonic:'+str(sonic_distance),'StopSign_length:'+str(stop_length))
+ 
         if image[150:160,140:180].mean() > 240:
             result = (-1, 1)
             motor(*result)
-            time.sleep(1.5)
-
+            time.sleep(1.2)
+        elif AR_id == 114 && AR_length > ??:
+            motor(0.5, 1)
+            time.sleep(3)
+        elif AR_id == 922 && AR_length > ??:
+            motor(1, 0.5)
+            time.sleep(3)
+        elif AR_id == 2537 && AR_length > ??:
+            motor(0, 0)
+            time.sleep(5)
+        elif sonic_distance < 20:
+            motor(0, 0)
+            time.sleep(5)
         elif abs(m) < forward_criteria:
             result = (1, 1)
             motor(*result)
-
-        elif m > 0:
-            print('left')
-            P_left = 1-K*abs(m)
-            result = (max(P_left, 0), 1)
-            motor(*result)
-
         else:
-            print('right')
-            P_right = 1-K*abs(m)
-            result = (1, max(P_right, 0))
+            print('else')
+            P = 1-K*abs(m)
+            result =  (max(P, 0), 1) if m > 0 else (1, max(P, 0))
             motor(*result)
-    except:
-        result = 'backward'
-        m = 0
+    except Exception as error:
+        print(error)
 
     # return result, round(m, 4), forward
 
@@ -273,7 +278,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     #AR_marker(image)
     #ultra_sonic()
     #cv2.imshow("Processed", mask_image)
-    cv2.imshow("Raw", image)
+    #cv2.imshow("Raw", image)
 
     key = cv2.waitKey(1) & 0xFF  # 에러 방지
     rawCapture.truncate(0)  # 에러 방지
