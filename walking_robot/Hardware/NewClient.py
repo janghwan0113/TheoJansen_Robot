@@ -60,7 +60,7 @@ def select_white(image, white):
 #     })
 
 
-def set_path3(image, forward_criteria):
+def set_path3(image, forward_criteria, raw_image_array):
 
     height, width = image.shape
     #ratio = .1
@@ -93,7 +93,7 @@ def set_path3(image, forward_criteria):
             q
         center = int((left+right)/2)'''
 
-        print(int(first_nonzero(image[:, center], 0, height)))
+        #print(int(first_nonzero(image[:, center], 0, height)))
         forward = min(int(height), int(
             first_nonzero(image[:, center], 0, height))-1)
         #print(height, first_nonzero(image[:,center],0,height))
@@ -107,9 +107,9 @@ def set_path3(image, forward_criteria):
         center_x = np.vstack((np.arange(forward), np.zeros(forward)))
         m, c = np.linalg.lstsq(center_x.T, center_y, rcond=-1)[0]  # 최소제곱법
         # result = m
-        print('slope :' + str(m))
         K = 2.8
-        AR_marker(image)
+        AR_length, AR_id = AR_marker(raw_image_array)
+        print('AR_length:'+str(AR_length),'AR_id:'+str(AR_id),'slope:' + str(m))
         if image[150:160,140:180].mean() > 240:
             result = (-1, 1)
             motor(*result)
@@ -123,14 +123,12 @@ def set_path3(image, forward_criteria):
             print('left')
             P_left = 1-K*abs(m)
             result = (max(P_left, 0), 1)
-            #result =(0.25,1)
             motor(*result)
 
         else:
             print('right')
             P_right = 1-K*abs(m)
             result = (1, max(P_right, 0))
-            #result=(1,0.25)
             motor(*result)
     except:
         result = 'backward'
@@ -204,17 +202,15 @@ def detect_stop(img_array):
 
 def AR_marker(img_array):
     markers = detect_markers(img_array)   #배열을 리턴
-    length = 0
     for marker in markers :
         crdt_x, crdt_y = ([], [])
         for i in range(4):
             crdt_x.append(marker.contours[i][0][0])
             crdt_y.append(marker.contours[i][0][1]) 
-        print('detected',marker.id, marker.contours)
-        length = max(crdt_x)-min(crdt_x)
-        print(length)
         marker.highlite_marker(img_array)
-    return length
+        length = max(crdt_x)-min(crdt_x)
+        id_num = marker.id
+    return length, id_num
 
 camera = PiCamera()
 camera.resolution = (320, 240)
@@ -238,8 +234,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     cv2.imshow("Raw", image)
     #UploadNumpy(mask_image)
     #detect_stop(image)
-    #set_path3(mask_image, 0.04)
-    AR_marker(image)
+    set_path3(mask_image, 0.04, image)
+    #R_marker(image)
 
     key = cv2.waitKey(1) & 0xFF  # 에러 방지
     rawCapture.truncate(0)  # 에러 방지
