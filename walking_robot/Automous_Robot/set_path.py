@@ -8,8 +8,10 @@ from ultra_sonic import ultra_sonic
 from detect_stop import detect_stop
 from motor import motor
 
+timer = None
 
 def set_path(image, forward_criteria, raw_image_array):
+    global timer
 
     height, width = image.shape
     height = height-1
@@ -36,7 +38,10 @@ def set_path(image, forward_criteria, raw_image_array):
         K = 3
         AR_length, AR_id = AR_marker(raw_image_array)
         sonic_distance = ultra_sonic()
-        stop_length = detect_stop(raw_image_array)
+        if timer:
+            stop_length = 0
+        else:
+            stop_length = detect_stop(raw_image_array)
         print('slope:' + str(m), 'AR_length:'+str(AR_length), 'AR_id:'+str(AR_id),
               'Ultra_Sonic:'+str(sonic_distance), 'StopSign_length:'+str(stop_length))
 
@@ -56,6 +61,10 @@ def set_path(image, forward_criteria, raw_image_array):
         elif stop_length > 30:
             motor(0, 0)
             time.sleep(5)
+            def handler:
+                timer = None
+            timer = threading.Timer(5, handler)
+            timer.start()
         elif sonic_distance > 15 and sonic_distance < 30:
             motor(0, 0)
             time.sleep(5)
