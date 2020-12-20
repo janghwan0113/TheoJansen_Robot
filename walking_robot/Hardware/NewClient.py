@@ -117,13 +117,13 @@ def set_path3(image, forward_criteria, raw_image_array):
             result = (-1, 1)
             motor(*result)
             time.sleep(1.2)
-        elif AR_id == 114 && AR_length > ??:
+        elif AR_id == 114 and AR_length > 35:
             motor(0.5, 1)
             time.sleep(3)
-        elif AR_id == 922 && AR_length > ??:
+        elif AR_id == 922 and AR_length > 35:
             motor(1, 0.5)
             time.sleep(3)
-        elif AR_id == 2537 && AR_length > ??:
+        elif AR_id == 2537 and AR_length > 30:
             motor(0, 0)
             time.sleep(5)
         elif sonic_distance < 20:
@@ -221,6 +221,8 @@ def AR_marker(img_array):
         marker.highlite_marker(img_array)
         length = max(crdt_x)-min(crdt_x)
         id_num = marker.id
+    print(length, id_num)
+    cv2.imshow('img', img_array)
     return length, id_num 
 
 
@@ -274,8 +276,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     #print(mask_image[150:160,140:180].mean())
     #UploadNumpy(mask_image)
     #detect_stop(image)
-    set_path3(mask_image, 0.04, image)
-    #AR_marker(image)
+    #set_path3(mask_image, 0.04, image)
+    AR_marker(image)
     #ultra_sonic()
     #cv2.imshow("Processed", mask_image)
     #cv2.imshow("Raw", image)
