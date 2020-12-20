@@ -66,12 +66,12 @@ def set_path3(image, forward_criteria, raw_image_array):
     #ratio = .1
     #end_ratio = 1 - ratio
     #print(1, image.shape)
-    #image = image[
-     #   int(height*ratio):,
-      #  :
-    #]
+    # image = image[
+    #   int(height*ratio):,
+    #  :
+    # ]
     #print(2, image.shape)
-    #print(image)
+    # print(image)
     #height, width = image.shape
     height = height-1
     width = width-1
@@ -107,23 +107,29 @@ def set_path3(image, forward_criteria, raw_image_array):
         center_x = np.vstack((np.arange(forward), np.zeros(forward)))
         m, c = np.linalg.lstsq(center_x.T, center_y, rcond=-1)[0]  # 최소제곱법
         # result = m
-        K = 2.8
+        K = 3
         AR_length, AR_id = AR_marker(raw_image_array)
         sonic_distance = ultra_sonic()
         stop_length = detect_stop(raw_image_array)
-        print('slope:' + str(m),'AR_length:'+str(AR_length),'AR_id:'+str(AR_id), 'Ultra_Sonic:'+str(sonic_distance),'StopSign_length:'+str(stop_length))
- 
-        if image[150:160,140:180].mean() > 240:
+        '''
+        prinit('slope:' + str(m), 'AR_length:'+str(AR_length), 'AR_id:'+str(AR_id),
+              'Ultra_Sonic:'+str(sonic_distance), 'StopSign_length:'+str(stop_length))
+        '''
+        print(AR_length, AR_id)
+        if image[150:160, 140:180].mean() > 240:
             result = (-1, 1)
             motor(*result)
-            time.sleep(1.2)
+            time.sleep(1.5)
         elif AR_id == 114 and AR_length > 35:
-            motor(0.5, 1)
-            time.sleep(3)
+            motor(0, 1)
+            time.sleep(1.5)
         elif AR_id == 922 and AR_length > 35:
             motor(1, 0.5)
             time.sleep(3)
         elif AR_id == 2537 and AR_length > 30:
+            motor(0, 0)
+            time.sleep(5)
+        elif stop_length > 30:
             motor(0, 0)
             time.sleep(5)
         elif sonic_distance < 20:
@@ -132,15 +138,22 @@ def set_path3(image, forward_criteria, raw_image_array):
         elif abs(m) < forward_criteria:
             result = (1, 1)
             motor(*result)
-        else:
-            print('else')
+        elif m > 0:
+            print('left')
             P = 1-K*abs(m)
-            result =  (max(P, 0), 1) if m > 0 else (1, max(P, 0))
+            result = (max(P, 0), 1)
             motor(*result)
+        elif m < 0:
+            print('right')
+            P = 1-K*abs(m)
+            result = (1, max(P, 0))
+            motor(*result)
+
     except Exception as error:
         print(error)
 
     # return result, round(m, 4), forward
+
 
 motor1A = 38
 motor1B = 40
@@ -164,6 +177,7 @@ p1B.start(100)
 p2A.start(100)
 p2B.start(100)
 
+
 def motor(left, right):
     if left > 0:
         left_f = left
@@ -183,17 +197,20 @@ def motor(left, right):
     p2A.ChangeDutyCycle(right_f*100)
     p2B.ChangeDutyCycle(right_b*100)
 
+
 def cleanup():
     GPIO.cleanup()
 
 
 atexit.register(cleanup)
 
+
 def first_nonzero(arr, axis, invalid_val=-1):
     arr = np.flipud(arr)  # 사진뒤집어주는 코드
     mask = arr != 0  # 숫자가 255인 것은 True(1), 0인 것은 False(0)
     # 가로축 기준으로, 최댓값(1)의 위치를 반환, 만약 1을 발견하지 못하면 뚫려있다는 의미이므로 height 값을 반환
     return np.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
+
 
 def detect_stop(img_array):
     face_cascade = cv2.CascadeClassifier('./cascade.xml')
@@ -205,34 +222,36 @@ def detect_stop(img_array):
         length = objs[0][3]
         for (x, y, w, h) in objs:
             cv2.rectangle(img_array, (x, y), (x+w, y+h), (255, 0, 0), 2)
-    else :
-        length = 0       
-    cv2.imshow('img', img_array)
+        #cv2.imshow('img', img_array)
+    else:
+        length = 0
+    print(length)
     return length
 
+
 def AR_marker(img_array):
-    markers = detect_markers(img_array)   #배열을 리턴
-    length, id_num = (0,0)
-    for marker in markers :
+    markers = detect_markers(img_array)  # 배열을 리턴
+    length, id_num = (0, 0)
+    for marker in markers:
         crdt_x, crdt_y = ([], [])
         for i in range(4):
             crdt_x.append(marker.contours[i][0][0])
-            crdt_y.append(marker.contours[i][0][1]) 
+            crdt_y.append(marker.contours[i][0][1])
         marker.highlite_marker(img_array)
         length = max(crdt_x)-min(crdt_x)
         id_num = marker.id
     print(length, id_num)
     cv2.imshow('img', img_array)
-    return length, id_num 
-
+    return length, id_num
 
 
 GPIO_TRIGGER = 10
-GPIO_ECHO    = 12
- 
+GPIO_ECHO = 12
+
 GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
 GPIO.setup(GPIO_ECHO, GPIO.IN)
 GPIO.output(GPIO_TRIGGER, False)
+
 
 def ultra_sonic():
     GPIO.output(GPIO_TRIGGER, True)
@@ -241,12 +260,12 @@ def ultra_sonic():
     start = time.time()
     timeOut = start
 
-    while GPIO.input(GPIO_ECHO)==0:
+    while GPIO.input(GPIO_ECHO) == 0:
         start = time.time()
         if time.time()-timeOut > 0.05:
             return -1
 
-    while GPIO.input(GPIO_ECHO)==1:
+    while GPIO.input(GPIO_ECHO) == 1:
         if time.time()-start > 0.05:
             return -1
         stop = time.time()
@@ -254,6 +273,7 @@ def ultra_sonic():
     elapsed = stop-start
     distance = (elapsed * 34300)/2
     return distance
+
 
 camera = PiCamera()
 camera.resolution = (320, 240)
@@ -266,20 +286,20 @@ rawCapture = PiRGBArray(camera, size=(320, 240))
 
 time.sleep(.1)
 t = time.time()
- 
+
 # main()
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 
     image = frame.array
-    mask_image = select_white(image, 150)  # mask image array
+    mask_image = select_white(image, 120)  # mask image array
 
-    #print(mask_image[150:160,140:180].mean())
-    #UploadNumpy(mask_image)
-    #detect_stop(image)
-    #set_path3(mask_image, 0.04, image)
-    AR_marker(image)
-    #ultra_sonic()
-    #cv2.imshow("Processed", mask_image)
+    # print(mask_image[150:160,140:180].mean())
+    # UploadNumpy(mask_image)
+    # detect_stop(image)
+    set_path3(mask_image, 0.04, image)
+    # AR_marker(image)
+    # ultra_sonic()
+    cv2.imshow("Processed", mask_image)
     #cv2.imshow("Raw", image)
 
     key = cv2.waitKey(1) & 0xFF  # 에러 방지
@@ -287,7 +307,6 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     if key == ord('q'):
         break
-
 
 
 '''
