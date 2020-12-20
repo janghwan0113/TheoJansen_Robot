@@ -107,15 +107,12 @@ def set_path3(image, forward_criteria, raw_image_array):
         center_x = np.vstack((np.arange(forward), np.zeros(forward)))
         m, c = np.linalg.lstsq(center_x.T, center_y, rcond=-1)[0]  # 최소제곱법
         # result = m
-        K = 3
+        K = 2.8
         AR_length, AR_id = AR_marker(raw_image_array)
         sonic_distance = ultra_sonic()
         stop_length = detect_stop(raw_image_array)
-        '''
-        prinit('slope:' + str(m), 'AR_length:'+str(AR_length), 'AR_id:'+str(AR_id),
+        print('slope:' + str(m), 'AR_length:'+str(AR_length), 'AR_id:'+str(AR_id),
               'Ultra_Sonic:'+str(sonic_distance), 'StopSign_length:'+str(stop_length))
-        '''
-        print(AR_length, AR_id)
         if image[150:160, 140:180].mean() > 240:
             result = (-1, 1)
             motor(*result)
@@ -225,7 +222,7 @@ def detect_stop(img_array):
         #cv2.imshow('img', img_array)
     else:
         length = 0
-    print(length)
+    # print(length)
     return length
 
 
@@ -240,7 +237,7 @@ def AR_marker(img_array):
         marker.highlite_marker(img_array)
         length = max(crdt_x)-min(crdt_x)
         id_num = marker.id
-    print(length, id_num)
+    #print(length, id_num)
     cv2.imshow('img', img_array)
     return length, id_num
 
