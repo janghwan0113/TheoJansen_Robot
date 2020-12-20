@@ -137,13 +137,13 @@ def set_path3(image, forward_criteria, raw_image_array):
             motor(*result)
         elif m > 0:
             print('left')
-            P = 1-K*abs(m)
-            result = (max(P, 0), 1)
+            P_left = 1-K*abs(m)
+            result = (max(P_left, 0), 1)
             motor(*result)
-        elif m < 0:
+        else:
             print('right')
-            P = 1-K*abs(m)
-            result = (1, max(P, 0))
+            P_right = 1-K*abs(m)
+            result = (1, max(P_right, 0))
             motor(*result)
 
     except Exception as error:

@@ -1,5 +1,6 @@
 import cv2
 
+
 def detect_stop(img_array):
     face_cascade = cv2.CascadeClassifier('./cascade.xml')
     gray = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
@@ -9,7 +10,7 @@ def detect_stop(img_array):
         length = objs[0][3]
         for (x, y, w, h) in objs:
             cv2.rectangle(img_array, (x, y), (x+w, y+h), (255, 0, 0), 2)
-        #cv2.imshow('img', img_array)
+        cv2.imshow('img', img_array)
     else:
         length = 0
     # print(length)

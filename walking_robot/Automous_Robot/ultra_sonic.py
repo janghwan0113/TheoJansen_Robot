@@ -12,7 +12,7 @@ GPIO.output(GPIO_TRIGGER, False)
 
 def ultra_sonic():
     GPIO.output(GPIO_TRIGGER, True)
-    time.sleep(0.00001)
+    time.sleep(0.001)
     GPIO.output(GPIO_TRIGGER, False)
     start = time.time()
     timeOut = start

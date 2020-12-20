@@ -8,6 +8,7 @@ from ultra_sonic import ultra_sonic
 from detect_stop import detect_stop
 from motor import motor
 
+
 def set_path(image, forward_criteria, raw_image_array):
 
     height, width = image.shape
@@ -32,44 +33,44 @@ def set_path(image, forward_criteria, raw_image_array):
         center_x = np.vstack((np.arange(forward), np.zeros(forward)))
         m, c = np.linalg.lstsq(center_x.T, center_y, rcond=-1)[0]  # 최소제곱법
         # result = m
-        K = 2.8
+        K = 3
         AR_length, AR_id = AR_marker(raw_image_array)
         sonic_distance = ultra_sonic()
         stop_length = detect_stop(raw_image_array)
         print('slope:' + str(m), 'AR_length:'+str(AR_length), 'AR_id:'+str(AR_id),
               'Ultra_Sonic:'+str(sonic_distance), 'StopSign_length:'+str(stop_length))
-        
+
         if image[150:160, 140:180].mean() > 240:
             result = (-1, 1)
             motor(*result)
-            time.sleep(1.5)
+            time.sleep(1.2)
         elif AR_id == 114 and AR_length > 35:
-            motor(0, 1)
+            motor(0.2, 1)
             time.sleep(1.5)
         elif AR_id == 922 and AR_length > 35:
-            motor(1, 0.5)
+            motor(1, 0.2)
             time.sleep(3)
-        elif AR_id == 2537 and AR_length > 30:
+        elif AR_id == 2537 and AR_length > 50:
             motor(0, 0)
             time.sleep(5)
         elif stop_length > 30:
             motor(0, 0)
             time.sleep(5)
-        elif sonic_distance < 20:
+        elif sonic_distance > 15 and sonic_distance < 30:
             motor(0, 0)
             time.sleep(5)
         elif abs(m) < forward_criteria:
             result = (1, 1)
             motor(*result)
-        elif m > 0:
+        elif abs(m) > forward_criteria and m > 0:
             print('left')
-            P = 1-K*abs(m)
-            result = (max(P, 0), 1)
+            P_left = 1-K*abs(m)
+            result = (1.5*max(P_left, 0), 1)
             motor(*result)
-        elif m < 0:
+        elif abs(m) > forward_criteria and m < 0:
             print('right')
-            P = 1-K*abs(m)
-            result = (1, max(P, 0))
+            P_right = 1-K*abs(m)
+            result = (1, 1.5*max(P_right, 0))
             motor(*result)
 
     except Exception as error:
