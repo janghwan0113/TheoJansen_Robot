@@ -24,10 +24,10 @@ t = time.time()
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 
     image = frame.array
-    mask_image = select_white(image, 100)  # mask image array
+    mask_image = select_white(image, 120)  # mask image array
 
     # print(mask_image[150:160,140:180].mean())
-    # detect_stop(image)
+    #detect_stop(image)
     set_path(mask_image, 0.04, image)
     # AR_marker(image)
     # ultra_sonic()

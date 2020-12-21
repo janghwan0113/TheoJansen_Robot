@@ -9,11 +9,11 @@ from detect_stop import detect_stop
 from motor import motor
 import threading
 
-timer = None
+
+Stop = True
 
 def set_path(image, forward_criteria, raw_image_array):
-    global timer
-
+    
     height, width = image.shape
     height = height-1
     width = width-1
@@ -36,43 +36,37 @@ def set_path(image, forward_criteria, raw_image_array):
         center_x = np.vstack((np.arange(forward), np.zeros(forward)))
         m, c = np.linalg.lstsq(center_x.T, center_y, rcond=-1)[0]  # 최소제곱법
         # result = m
-        K = 3
+        global Stop
+        K = 2.8
         AR_length, AR_id = AR_marker(raw_image_array)
         sonic_distance = ultra_sonic()
         stop_length = detect_stop(raw_image_array)
-        
-        print('slope:' + str(m), 'AR_length:'+str(AR_length), 'AR_id:'+str(AR_id), 'Ultra_Sonic:'+str(sonic_distance), 'StopSign_length:'+str(stop_length))
-        
-        if timer:
-            stop_length = 0
-        else:
-            stop_length = detect_stop(raw_image_array)
+
+        print('slope:' + str(m), 'AR_length:'+str(AR_length), 'AR_id:'+str(AR_id),
+              'Ultra_Sonic:'+str(sonic_distance), 'StopSign_length:'+str(stop_length))
 
         if image[150:160, 140:180].mean() > 240:
             print('90-turn')
             result = (-1, 1)
             motor(*result)
             time.sleep(0.5)
-        elif AR_id == 114 and AR_length > 35:
+        elif AR_id == 114 and AR_length > 25:
             print('AR_left')
             motor(0.2, 1)
             time.sleep(1.5)
-        elif AR_id == 922 and AR_length > 35:
+        elif AR_id == 922 and AR_length > 25:
             print('AR_right')
-            motor(1, 0.2)
+            motor(0.8, 0.5)
             time.sleep(3)
-        elif AR_id == 2537 and AR_length > 50:
+        elif AR_id == 2537 and AR_length > 25:
             print('AR_stop')
             motor(0, 0)
             time.sleep(5)
-        elif stop_length > 30:
+        elif Stop == True and stop_length > 20:
             print('Stop Sign!')
             motor(0, 0)
             time.sleep(5)
-            def handler() :
-                timer = None
-            timer = threading.Timer(5, handler)
-            timer.start()
+            Stop = False
         elif sonic_distance > 15 and sonic_distance < 30:
             print('Sonic Stop!')
             motor(0, 0)
@@ -84,7 +78,7 @@ def set_path(image, forward_criteria, raw_image_array):
         elif abs(m) > forward_criteria and m > 0:
             print('Left')
             P_left = 1-K*abs(m)
-            result = (max(P_left, 0), 1)
+            result = (0.6*max(P_left, 0), 1)
             motor(*result)
         elif abs(m) > forward_criteria and m < 0:
             print('Right')
@@ -94,3 +88,17 @@ def set_path(image, forward_criteria, raw_image_array):
 
     except Exception as error:
         print(error)
+
+
+'''
+timer = None
+global timer
+            def handler():
+                timer = None
+            timer = threading.Timer(5, handler)
+            timer.start()
+            if timer:
+            stop_length = 0
+        else:
+            stop_length = detect_stop(raw_image_array)
+'''

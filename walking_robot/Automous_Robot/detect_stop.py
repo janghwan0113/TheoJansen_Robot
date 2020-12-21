@@ -2,7 +2,7 @@ import cv2
 
 
 def detect_stop(img_array):
-    face_cascade = cv2.CascadeClassifier('./cascade.xml')
+    face_cascade = cv2.CascadeClassifier('./cascade2.xml')
     gray = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
     objs = face_cascade.detectMultiScale(gray, 1.3, 5)
 
