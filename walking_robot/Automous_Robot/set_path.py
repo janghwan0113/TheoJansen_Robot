@@ -49,7 +49,7 @@ def set_path(image, forward_criteria, raw_image_array):
             stop_length = detect_stop(raw_image_array)
 
         if image[150:160, 140:180].mean() > 240:
-            print('U-turn')
+            print('90-turn')
             result = (-1, 1)
             motor(*result)
             time.sleep(0.5)
