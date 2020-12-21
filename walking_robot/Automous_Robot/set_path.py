@@ -12,8 +12,9 @@ import threading
 
 Stop = True
 
+
 def set_path(image, forward_criteria, raw_image_array):
-    
+
     height, width = image.shape
     height = height-1
     width = width-1
@@ -50,13 +51,13 @@ def set_path(image, forward_criteria, raw_image_array):
             result = (-1, 1)
             motor(*result)
             time.sleep(0.5)
-        elif AR_id == 114 and AR_length > 25:
+        elif AR_id == 114 and AR_length > 35:
             print('AR_left')
             motor(0.2, 1)
-            time.sleep(1.5)
-        elif AR_id == 922 and AR_length > 25:
+            time.sleep(1)
+        elif AR_id == 922 and AR_length > 30:
             print('AR_right')
-            motor(0.8, 0.5)
+            motor(1, 0.7)
             time.sleep(3)
         elif AR_id == 2537 and AR_length > 25:
             print('AR_stop')
