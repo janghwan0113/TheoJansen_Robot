@@ -7,6 +7,7 @@ from AR_marker import AR_marker
 from ultra_sonic import ultra_sonic
 from detect_stop import detect_stop
 from motor import motor
+import threading
 
 timer = None
 
@@ -38,46 +39,53 @@ def set_path(image, forward_criteria, raw_image_array):
         K = 3
         AR_length, AR_id = AR_marker(raw_image_array)
         sonic_distance = ultra_sonic()
+        print('slope:' + str(m), 'AR_length:'+str(AR_length), 'AR_id:'+str(AR_id),
+              'Ultra_Sonic:'+str(sonic_distance), 'StopSign_length:'+str(stop_length))
         if timer:
             stop_length = 0
         else:
             stop_length = detect_stop(raw_image_array)
-        print('slope:' + str(m), 'AR_length:'+str(AR_length), 'AR_id:'+str(AR_id),
-              'Ultra_Sonic:'+str(sonic_distance), 'StopSign_length:'+str(stop_length))
 
         if image[150:160, 140:180].mean() > 240:
+            print('U-turn')
             result = (-1, 1)
             motor(*result)
-            time.sleep(1.2)
+            time.sleep(0.5)
         elif AR_id == 114 and AR_length > 35:
+            print('AR_left')
             motor(0.2, 1)
             time.sleep(1.5)
         elif AR_id == 922 and AR_length > 35:
+            print('AR_rigth')
             motor(1, 0.2)
             time.sleep(3)
         elif AR_id == 2537 and AR_length > 50:
+            print('AR_stop')
             motor(0, 0)
             time.sleep(5)
         elif stop_length > 30:
+            print('Stop Sign!')
             motor(0, 0)
             time.sleep(5)
-            def handler:
+            def handler() :
                 timer = None
             timer = threading.Timer(5, handler)
             timer.start()
         elif sonic_distance > 15 and sonic_distance < 30:
+            print('Sonic Stop!')
             motor(0, 0)
             time.sleep(5)
         elif abs(m) < forward_criteria:
+            print('Straight')
             result = (1, 1)
             motor(*result)
         elif abs(m) > forward_criteria and m > 0:
-            print('left')
+            print('Left')
             P_left = 1-K*abs(m)
             result = (1.5*max(P_left, 0), 1)
             motor(*result)
         elif abs(m) > forward_criteria and m < 0:
-            print('right')
+            print('Right')
             P_right = 1-K*abs(m)
             result = (1, 1.5*max(P_right, 0))
             motor(*result)
