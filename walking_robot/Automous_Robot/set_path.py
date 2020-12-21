@@ -39,8 +39,10 @@ def set_path(image, forward_criteria, raw_image_array):
         K = 3
         AR_length, AR_id = AR_marker(raw_image_array)
         sonic_distance = ultra_sonic()
-        print('slope:' + str(m), 'AR_length:'+str(AR_length), 'AR_id:'+str(AR_id),
-              'Ultra_Sonic:'+str(sonic_distance), 'StopSign_length:'+str(stop_length))
+        stop_length = detect_stop(raw_image_array)
+        
+        print('slope:' + str(m), 'AR_length:'+str(AR_length), 'AR_id:'+str(AR_id), 'Ultra_Sonic:'+str(sonic_distance), 'StopSign_length:'+str(stop_length))
+        
         if timer:
             stop_length = 0
         else:
@@ -56,7 +58,7 @@ def set_path(image, forward_criteria, raw_image_array):
             motor(0.2, 1)
             time.sleep(1.5)
         elif AR_id == 922 and AR_length > 35:
-            print('AR_rigth')
+            print('AR_right')
             motor(1, 0.2)
             time.sleep(3)
         elif AR_id == 2537 and AR_length > 50:
@@ -82,12 +84,12 @@ def set_path(image, forward_criteria, raw_image_array):
         elif abs(m) > forward_criteria and m > 0:
             print('Left')
             P_left = 1-K*abs(m)
-            result = (1.5*max(P_left, 0), 1)
+            result = (max(P_left, 0), 1)
             motor(*result)
         elif abs(m) > forward_criteria and m < 0:
             print('Right')
             P_right = 1-K*abs(m)
-            result = (1, 1.5*max(P_right, 0))
+            result = (1, max(P_right, 0))
             motor(*result)
 
     except Exception as error:

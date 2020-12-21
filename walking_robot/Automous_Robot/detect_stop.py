@@ -10,8 +10,9 @@ def detect_stop(img_array):
         length = objs[0][3]
         for (x, y, w, h) in objs:
             cv2.rectangle(img_array, (x, y), (x+w, y+h), (255, 0, 0), 2)
-        cv2.imshow('img', img_array)
     else:
         length = 0
+    cv2.imshow('Stop', img_array)
     # print(length)
+
     return length

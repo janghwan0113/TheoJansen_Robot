@@ -13,5 +13,5 @@ def AR_marker(img_array):
         length = max(crdt_x)-min(crdt_x)
         id_num = marker.id
     #print(length, id_num)
-    cv2.imshow('img', img_array)
+    cv2.imshow('AR', img_array)
     return length, id_num
