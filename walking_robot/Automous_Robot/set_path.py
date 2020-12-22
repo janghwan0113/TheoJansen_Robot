@@ -38,7 +38,7 @@ def set_path(image, forward_criteria, raw_image_array):
         m, c = np.linalg.lstsq(center_x.T, center_y, rcond=-1)[0]  # 최소제곱법
         # result = m
         global Stop
-        K = 2.8
+        K = 3
         AR_length, AR_id = AR_marker(raw_image_array)
         sonic_distance = ultra_sonic()
         stop_length = detect_stop(raw_image_array)
@@ -55,10 +55,10 @@ def set_path(image, forward_criteria, raw_image_array):
             print('AR_left')
             motor(0.2, 1)
             time.sleep(1)
-        elif AR_id == 922 and AR_length > 30:
+        elif AR_id == 922 and AR_length > 40:
             print('AR_right')
-            motor(1, 0.7)
-            time.sleep(3)
+            motor(1, 0.4)
+            time.sleep(1)
         elif AR_id == 2537 and AR_length > 25:
             print('AR_stop')
             motor(0, 0)
@@ -71,7 +71,7 @@ def set_path(image, forward_criteria, raw_image_array):
         elif sonic_distance > 15 and sonic_distance < 30:
             print('Sonic Stop!')
             motor(0, 0)
-            time.sleep(5)
+            time.sleep(0.5)
         elif abs(m) < forward_criteria:
             print('Straight')
             result = (1, 1)
@@ -79,7 +79,7 @@ def set_path(image, forward_criteria, raw_image_array):
         elif abs(m) > forward_criteria and m > 0:
             print('Left')
             P_left = 1-K*abs(m)
-            result = (0.6*max(P_left, 0), 1)
+            result = (max(P_left, 0), 1)
             motor(*result)
         elif abs(m) > forward_criteria and m < 0:
             print('Right')
