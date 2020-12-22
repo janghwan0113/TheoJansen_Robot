@@ -54,7 +54,7 @@ def set_path(image, forward_criteria, raw_image_array):
             time.sleep(0.5)
         elif AR_id == 114 and AR_length > 30:
             print('AR_left')
-            motor(-1, 1)
+            motor(0.3, 1)
             time.sleep(0.6)
             n = n + 1
         elif AR_id == 922 and AR_length > 40:
