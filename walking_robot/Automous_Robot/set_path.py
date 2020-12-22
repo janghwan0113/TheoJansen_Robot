@@ -52,15 +52,15 @@ def set_path(image, forward_criteria, raw_image_array):
             time.sleep(0.5)
         elif AR_id == 114 and AR_length > 30:
             print('AR_left')
-            motor(0.2, 1)
-            time.sleep(1.5)
+            motor(0.4, 1)
+            time.sleep(1)
             n += 1
             print(n)
         elif AR_id == 922 and AR_length > 40:
             print('AR_right')
             motor(1, 0.4)
             time.sleep(1)
-        elif AR_id == 2537 and AR_length > 25:
+        elif AR_id == 2537 and AR_length > 35:
             print('AR_stop')
             motor(0, 0)
             time.sleep(5)
@@ -80,7 +80,7 @@ def set_path(image, forward_criteria, raw_image_array):
         elif abs(m) > forward_criteria and m > 0:
             print('Left')
             P_left = 1-K*abs(m)
-            result = (max(P_left, 0), 1)
+            result = (0.8*max(P_left, 0), 1)
             motor(*result)
         elif abs(m) > forward_criteria and m < 0:
             print('Right')
