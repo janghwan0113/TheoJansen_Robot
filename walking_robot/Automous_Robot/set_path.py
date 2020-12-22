@@ -85,7 +85,7 @@ def set_path(image, forward_criteria, raw_image_array):
         elif abs(m) > forward_criteria and m < 0:
             print('Right')
             P_right = 1-K*abs(m)
-            result = (1, max(P_right, 0))
+            result = (1, 0.6*max(P_right, 0))
             motor(*result)
 
     except Exception as error:
