@@ -11,7 +11,7 @@ import threading
 
 
 Stop = True
-
+AR = False
 
 def set_path(image, forward_criteria, raw_image_array):
 
@@ -38,6 +38,7 @@ def set_path(image, forward_criteria, raw_image_array):
         m, c = np.linalg.lstsq(center_x.T, center_y, rcond=-1)[0]  # 최소제곱법
         # result = m
         global Stop
+        n = 0
         K = 3
         AR_length, AR_id = AR_marker(raw_image_array)
         sonic_distance = ultra_sonic()
@@ -51,24 +52,25 @@ def set_path(image, forward_criteria, raw_image_array):
             result = (-1, 1)
             motor(*result)
             time.sleep(0.5)
-        elif AR_id == 114 and AR_length > 35:
+        elif AR_id == 114 and AR_length > 30:
             print('AR_left')
-            motor(0.2, 1)
-            time.sleep(1)
+            motor(-1, 1)
+            time.sleep(0.6)
+            n = n + 1
         elif AR_id == 922 and AR_length > 40:
             print('AR_right')
             motor(1, 0.4)
             time.sleep(1)
-        elif AR_id == 2537 and AR_length > 25:
+        elif AR_id == 2537 and AR_length > 30:
             print('AR_stop')
             motor(0, 0)
             time.sleep(5)
-        elif Stop == True and stop_length > 20:
+        elif n == 2 and Stop == True and stop_length > 20:
             print('Stop Sign!')
             motor(0, 0)
             time.sleep(5)
             Stop = False
-        elif sonic_distance > 15 and sonic_distance < 30:
+        elif sonic_distance > 10 and sonic_distance < 20:
             print('Sonic Stop!')
             motor(0, 0)
             time.sleep(0.5)
