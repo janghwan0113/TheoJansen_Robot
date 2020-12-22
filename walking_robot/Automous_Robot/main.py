@@ -28,7 +28,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # print(mask_image[150:160,140:180].mean())
     set_path(mask_image, 0.04, image)
-    #detect_stop(image)
+    # detect_stop(image)
     # AR_marker(image)
     # ultra_sonic()
     cv2.imshow("Processed", mask_image)
