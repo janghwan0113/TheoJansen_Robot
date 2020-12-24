@@ -52,8 +52,8 @@ def set_path(image, forward_criteria, raw_image_array):
             time.sleep(0.5)
         elif AR_id == 114 and AR_length > 30:
             print('AR_left')
-            motor(0.4, 1)
-            time.sleep(1)
+            motor(0.2, 1)
+            time.sleep(1.3)
             n += 1
             print(n)
         elif AR_id == 922 and AR_length > 40:
@@ -69,7 +69,7 @@ def set_path(image, forward_criteria, raw_image_array):
             motor(0, 0)
             time.sleep(5)
             n = 3
-        elif sonic_distance > 15 and sonic_distance < 30:
+        elif sonic_distance > 8 and sonic_distance < 20:
             print('Sonic Stop!')
             motor(0, 0)
             time.sleep(0.5)
@@ -85,7 +85,7 @@ def set_path(image, forward_criteria, raw_image_array):
         elif abs(m) > forward_criteria and m < 0:
             print('Right')
             P_right = 1-K*abs(m)
-            result = (1, 0.6*max(P_right, 0))
+            result = (1, 0.8*max(P_right, 0))
             motor(*result)
 
     except Exception as error:

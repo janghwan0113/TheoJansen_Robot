@@ -37,8 +37,8 @@ def motor(left, right):
         right_f = 0
         right_b = -right
 
-    p1A.ChangeDutyCycle(left_f*93)
-    p1B.ChangeDutyCycle(left_b*93)
+    p1A.ChangeDutyCycle(left_f*90)
+    p1B.ChangeDutyCycle(left_b*90)
     p2A.ChangeDutyCycle(right_f*100)
     p2B.ChangeDutyCycle(right_b*100)
 
